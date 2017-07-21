@@ -1,4 +1,4 @@
-/*
+package example;/*
  * Copyright (c) 2010-2017 Nathan Rajlich
  *
  *  Permission is hereby granted, free of charge, to any person
@@ -23,11 +23,10 @@
  *  OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.util.Collection;
 
 import org.java_websocket.WebSocket;
@@ -62,9 +61,19 @@ public class ChatServer extends WebSocketServer {
 	}
 
 	@Override
+	public void onMessage(WebSocket conn, ByteBuffer message) {
+		byte[] temp = new byte[message.remaining()];
+		message.get(temp);
+		String in = new String(temp);
+		System.out.println(" 444: " + in );
+		super.onMessage(conn, message);
+		System.out.println( conn + " 333: " + message );
+	}
+
+	@Override
 	public void onMessage( WebSocket conn, String message ) {
 		this.sendToAll( message );
-		System.out.println( conn + ": " + message );
+		System.out.println( conn + " 223: " + message );
 	}
 
 	@Override
@@ -84,8 +93,10 @@ public class ChatServer extends WebSocketServer {
 		System.out.println( "ChatServer started on port: " + s.getPort() );
 
 		BufferedReader sysin = new BufferedReader( new InputStreamReader( System.in ) );
+		BufferedInputStream byteIn = new BufferedInputStream(System.in);
 		while ( true ) {
 			String in = sysin.readLine();
+			System.out.println( "111111: " + in );
 			s.sendToAll( in );
 			if( in.equals( "exit" ) ) {
 				s.stop();

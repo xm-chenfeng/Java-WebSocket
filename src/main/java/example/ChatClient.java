@@ -1,4 +1,4 @@
-/*
+package example;/*
  * Copyright (c) 2010-2017 Nathan Rajlich
  *
  *  Permission is hereby granted, free of charge, to any person
@@ -30,6 +30,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -112,30 +114,41 @@ public class ChatClient extends JFrame implements ActionListener {
 
 		if( e.getSource() == chatField ) {
 			if( cc != null ) {
-				cc.send( chatField.getText() );
+//				cc.send( chatField.getText() );
+				byte [] textByte = "nihao, test byte".getBytes();
+				cc.send( textByte );
 				chatField.setText( "" );
 				chatField.requestFocus();
 			}
 
 		} else if( e.getSource() == connect ) {
 			try {
+
+				Map<String,String> httpHeaders = new HashMap<String, String>();
+				httpHeaders.put("key1", "value1");
+				httpHeaders.put("key2", "value2");
+				httpHeaders.put("key3", "value3");
+
 				// cc = new ChatClient(new URI(uriField.getText()), area, ( Draft ) draft.getSelectedItem() );
-				cc = new WebSocketClient( new URI( uriField.getText() ), (Draft) draft.getSelectedItem() ) {
+				cc = new WebSocketClient( new URI( uriField.getText() ), (Draft) draft.getSelectedItem(), httpHeaders, 5000) {
 
 					@Override
 					public void onMessage( String message ) {
+						System.out.println( "[onMessage]: " + message );
 						ta.append( "got: " + message + "\n" );
 						ta.setCaretPosition( ta.getDocument().getLength() );
 					}
 
 					@Override
 					public void onOpen( ServerHandshake handshake ) {
+						System.out.println( "[onOpen]: " );
 						ta.append( "You are connected to ChatServer: " + getURI() + "\n" );
 						ta.setCaretPosition( ta.getDocument().getLength() );
 					}
 
 					@Override
 					public void onClose( int code, String reason, boolean remote ) {
+						System.out.println( "[onClose]: " + code + ", " + reason + ", " + remote );
 						ta.append( "You have been disconnected from: " + getURI() + "; Code: " + code + " " + reason + "\n" );
 						ta.setCaretPosition( ta.getDocument().getLength() );
 						connect.setEnabled( true );
@@ -146,6 +159,7 @@ public class ChatClient extends JFrame implements ActionListener {
 
 					@Override
 					public void onError( Exception ex ) {
+						System.out.println( "[onError]: " + ex.getMessage() );
 						ta.append( "Exception occured ...\n" + ex + "\n" );
 						ta.setCaretPosition( ta.getDocument().getLength() );
 						ex.printStackTrace();
